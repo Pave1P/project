@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  web:
+    image: php:8.2-apache
+    container_name: eshop_app
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    # Передаем настройки базы данных в PHP
+    environment:
+      - DB_HOST=db
+      - DB_NAME=eshop
+      - DB_USER=root
+      - DB_PASSWORD=root
+    command: >
+      bash -c "echo '<VirtualHost *:80>
+          DocumentRoot /var/www/html/public
+          <Directory /var/www/html/public>
+              AllowOverride All
+              Require all granted
+          </Directory>
+      </VirtualHost>' > /etc/apache2/sites-available/000-default.conf && a2enmod rewrite && docker-php-entrypoint apache2-foreground"
+
+  # ВОТ ОНА - ТВОЯ НОВАЯ БАЗА ДАННЫХ
+  db:
+    image: mysql:8.0
+    container_name: eshop_db
+    restart: always
+    # Пароль задаем здесь!
+    environment:
+      MYSQL_DATABASE: eshop
+      MYSQL_ROOT_PASSWORD: root
+    # Пробрасываем порт наружу, чтобы подключился PhpStorm
+    # 3307 снаружи -> 3306 внутри (чтобы не конфликтовать с твоим маком)
+    ports:
+      - "3307:3306"
