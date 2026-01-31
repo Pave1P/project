@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  web:
+    image: php:8.2-apache
+    container_name: eshop_app
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    command: >
+      bash -c "echo '<VirtualHost *:80>
+          DocumentRoot /var/www/html/public
+          <Directory /var/www/html/public>
+              AllowOverride All
+              Require all granted
+          </Directory>
+      </VirtualHost>' > /etc/apache2/sites-available/000-default.conf && a2enmod rewrite && docker-php-entrypoint apache2-foreground"
