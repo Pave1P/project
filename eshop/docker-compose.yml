@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  web:
+    build: .                # <-- Строим из Dockerfile
+    container_name: eshop_app
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    environment:
+      - DB_HOST=db
+      - DB_NAME=eshop
+      - DB_USER=root
+      - DB_PASSWORD=root
+    # Исправленный путь к public
+    command: >
+      bash -c "echo '<VirtualHost *:80>
+          DocumentRoot /var/www/html/public
+          <Directory /var/www/html/public>
+              AllowOverride All
+              Require all granted
+          </Directory>
+      </VirtualHost>' > /etc/apache2/sites-available/000-default.conf && docker-php-entrypoint apache2-foreground"
+  
+
+  db:
+    image: mysql:8.0
+    container_name: eshop_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: eshop
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql  # <-- СОХРАНЯЕМ ДАННЫЕ БАЗЫ НАВСЕГДА
+
+volumes:
+  db_data: # Объявляем хранилище
